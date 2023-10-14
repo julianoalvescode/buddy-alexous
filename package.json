@@ -1,6 +1,6 @@
 {
   "name": "buddy-alexous",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Node.js CLI utility that automates the creation of TypeScript-based React.",
   "main": "index.js",
   "scripts": {
@@ -21,6 +21,7 @@
     "uglify-js": "^3.17.4"
   },
   "dependencies": {
+    "buddy-alexous": "^1.0.0",
     "cli-color": "^2.0.3",
     "commander": "^11.1.0",
     "glob": "^10.3.10"

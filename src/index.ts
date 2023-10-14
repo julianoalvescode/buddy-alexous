@@ -16,4 +16,9 @@ program
   .description("Create a new React component")
   .action(Commands.createComponent);
 
+program
+  .command("list-components <directory>")
+  .description("List all React components in a project")
+  .action(Commands.listComponents);
+
 program.parse(process.argv);
