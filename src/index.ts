@@ -4,7 +4,8 @@ import { program } from "commander";
 
 import { Commands } from "./commands";
 
-program.version("1.0.0");
+program.version("1.0.2");
+program.description("A CLI for React");
 
 program
   .command("find-unused")
@@ -17,7 +18,7 @@ program
   .action(Commands.createComponent);
 
 program
-  .command("list-components <directory>")
+  .command("list-components")
   .description("List all React components in a project")
   .action(Commands.listComponents);
 

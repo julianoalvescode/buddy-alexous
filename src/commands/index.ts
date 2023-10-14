@@ -82,7 +82,8 @@ test('renders ${name}', () => {
     console.log(black.bgGreen(`Component ${name} created successfully! 🎉!`));
   }
 
-  listComponents(directory: string = "src/components"): void {
+  listComponents(): void {
+    let directory = "src/components";
     const dirPath = path.join(process.cwd(), directory);
     if (!fs.existsSync(dirPath)) {
       console.error(
