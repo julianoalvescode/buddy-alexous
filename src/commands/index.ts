@@ -4,8 +4,6 @@ import * as path from "path";
 import { black } from "cli-color";
 
 class Command {
-  constructor() {}
-
   findUnusedComponents(): void {
     const files: string[] = glob.sync("**/*.js*", {
       ignore: "node_modules/**",
@@ -38,14 +36,81 @@ class Command {
       console.log(black.bgGreen(`No unused components found. 🎉!`));
     }
   }
+  listComponentsSizes(directory: string): void {
+    const fullPath = path.join(process.cwd(), directory);
+
+    if (!fs.existsSync(fullPath)) {
+      console.error(`Directory ${directory} does not exist.`);
+      return;
+    }
+
+    const files = fs.readdirSync(fullPath);
+    let totalFiles = 0;
+
+    files.forEach((file) => {
+      const componentPath = path.join(fullPath, file);
+      const stats = fs.statSync(componentPath);
+
+      if (stats.isFile()) {
+        const size = (stats["size"] / 1024).toFixed(2);
+        console.log(`${file}: ${size} KB`);
+        totalFiles++;
+      }
+    });
+
+    console.log(`Total number of files: ${totalFiles}`);
+  }
+
+  listComponentDependencies(componentPath: string): void {
+    const fullPath = path.join(process.cwd(), componentPath);
+
+    if (!fs.existsSync(fullPath)) {
+      console.error(`Component file ${componentPath} does not exist.`);
+      return;
+    }
+
+    const content = fs.readFileSync(fullPath, "utf8");
+    const importLines = content
+      .split("\n")
+      .filter((line) => line.trim().startsWith("import"));
+
+    console.log(`Dependencies for ${componentPath}:`);
+    importLines.forEach((line) => console.log(line.trim()));
+  }
+
+  generateComponentDocumentation(componentPath: string): void {
+    const fullPath = path.join(process.cwd(), componentPath);
+
+    if (!fs.existsSync(fullPath)) {
+      console.error(`Component file ${componentPath} does not exist.`);
+      return;
+    }
+
+    const content = fs.readFileSync(fullPath, "utf8");
+
+    const propMatches = content.match(/props\.\w+/g) || [];
+    const stateMatches = content.match(/this\.state\.\w+/g) || [];
+    const methodMatches = content.match(/this\.\w+\(/g) || [];
+
+    console.log(`Documentation for ${componentPath}:`);
+    console.log("Props:", [
+      ...new Set(propMatches.map((m) => m.replace("props.", ""))),
+    ]);
+    console.log("State:", [
+      ...new Set(stateMatches.map((m) => m.replace("this.state.", ""))),
+    ]);
+    console.log("Methods:", [
+      ...new Set(
+        methodMatches.map((m) => m.replace("this.", "").replace("(", ""))
+      ),
+    ]);
+  }
 
   createComponent(name: string): void {
     const dirPath: string = path.join(process.cwd(), name);
 
     if (fs.existsSync(dirPath)) {
-      console.log(
-        black.bgRedBright(`A directory with the name already exists! 💩`)
-      );
+      console.error(`A directory with the name ${name} already exists!`);
       return;
     }
 
@@ -72,49 +137,14 @@ import { render } from '@testing-library/react';
 import ${name} from './${name}';
 
 test('renders ${name}', () => {
-    render(<${name} />);
-      // Add your tests here
+  render(<${name} />);
+  // Add your tests here
 });
   `;
 
     fs.writeFileSync(path.join(dirPath, `${name}.test.ts`), testContent);
 
-    console.log(black.bgGreen(`Component ${name} created successfully! 🎉!`));
-  }
-
-  listComponents(): void {
-    let directory = "src/components";
-    const dirPath = path.join(process.cwd(), directory);
-    if (!fs.existsSync(dirPath)) {
-      console.error(
-        `${directory} not found. Make sure you are in the correct directory.`
-      );
-      return;
-    }
-
-    const componentFiles: string[] = [];
-
-    function getComponentsFromDir(dir: string): void {
-      const files = fs.readdirSync(dir);
-
-      for (const file of files) {
-        const absolutePath = path.join(dir, file);
-        const stat = fs.statSync(absolutePath);
-
-        if (stat.isDirectory()) {
-          getComponentsFromDir(absolutePath);
-        } else if (file.endsWith(".jsx") || file.endsWith(".tsx")) {
-          componentFiles.push(absolutePath);
-        }
-      }
-    }
-
-    getComponentsFromDir(dirPath);
-
-    console.log(black.bgGreen(`List of components: 🎉!`));
-    componentFiles.forEach((componentPath) =>
-      console.log(`- ${path.relative(process.cwd(), componentPath)}`)
-    );
+    console.log(`Component ${name} created successfully!`);
   }
 }
 
